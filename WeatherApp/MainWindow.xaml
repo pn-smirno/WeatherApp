@@ -1,0 +1,147 @@
+﻿<Window x:Class="WeatherApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+        Title="Погодное приложение" Height="700" Width="950"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E1E">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style TargetType="Button" x:Key="ActionButton">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Панель управления -->
+        <Border Grid.Row="0" Background="#2D2D30" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Город:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="White"/>
+
+                <ComboBox Width="140" 
+                          ItemsSource="{Binding Cities}"
+                          SelectedItem="{Binding SelectedCity}"
+                          Background="White" Foreground="Black"
+                          Margin="0,0,10,0"/>
+
+                <TextBox Width="120" 
+                         Text="{Binding NewCityName, UpdateSourceTrigger=PropertyChanged}"
+                         Background="White" Foreground="Black"
+                         Margin="0,0,10,0"/>
+
+                <Button Content="Добавить" Width="70"
+                        Command="{Binding AddCustomCityCommand}"
+                        Background="#28A745" Foreground="White"
+                        Margin="0,0,10,0"/>
+
+                <Button Content="Обновить" Width="70"
+                        Command="{Binding RefreshCommand}"
+                        Background="#007ACC" Foreground="White"
+                        Margin="0,0,10,0"/>
+
+                <Button Content="+" Width="30" Command="{Binding AddCityCommand}"
+                        Background="#555" Foreground="White"/>
+
+                <Button Content="-" Width="30" Command="{Binding RemoveCityCommand}"
+                        Background="#555" Foreground="White" Margin="5,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Статус -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <ProgressBar IsIndeterminate="True" Height="3" Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding Error}" Foreground="Red" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Контент -->
+        <ScrollViewer Grid.Row="2">
+            <StackPanel>
+
+                <!-- Карточка текущей погоды -->
+                <Border Background="#2D2D30" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Иконка -->
+                        <Image Grid.Column="0" Width="70" Height="70"
+                               Source="https://openweathermap.org/img/w/{Binding CurrentWeather.IconCode}.png"/>
+
+                        <StackPanel Grid.Column="1" Margin="15,0">
+                            <TextBlock Text="{Binding CurrentWeather.CityName}" FontSize="24" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding CurrentWeather.Description}" FontSize="14" Foreground="#888"/>
+                            <TextBlock FontSize="48" Foreground="#FFA500">
+                                <Run Text="{Binding CurrentWeather.Temperature, StringFormat={}{0:F0}}"/>°C
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock> Влажность: <Run Text="{Binding CurrentWeather.Humidity}"/>%</TextBlock>
+                            <TextBlock Margin="0,5,0,0"> Ветер: <Run Text="{Binding CurrentWeather.WindSpeed, StringFormat={}{0:F1}}"/> м/с</TextBlock>
+                            <TextBlock Margin="0,5,0,0">Давление: <Run Text="{Binding CurrentWeather.Pressure}"/> гПа</TextBlock>
+                            <TextBlock Margin="0,10,0,0" FontSize="10" Foreground="#555">
+                                Обновлено: <Run Text="{Binding CurrentWeather.LastUpdated, StringFormat={}{0:HH:mm:ss}}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Прогноз на 5 дней -->
+                <TextBlock Text=" Прогноз на 5 дней" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                <ItemsControl ItemsSource="{Binding Forecast}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#2D2D30" CornerRadius="8" Padding="10" Width="130" Margin="5">
+                                <StackPanel TextBlock.TextAlignment="Center">
+                                    <TextBlock Text="{Binding DisplayDate}" FontWeight="Bold" FontSize="12"/>
+                                    <!-- Иконка прогноза  -->
+                                    <Image Width="40" Height="40" 
+                                           Source="https://openweathermap.org/img/w/{Binding IconCode}.png"
+                                           Margin="0,5"/>
+                                    <TextBlock Foreground="#FFA500" FontSize="16">
+                                        <Run Text="{Binding MaxTemperature, StringFormat={}{0:F0}}"/>°
+                                    </TextBlock>
+                                    <TextBlock Foreground="#888" FontSize="12">
+                                        <Run Text="{Binding MinTemperature, StringFormat={}{0:F0}}"/>°
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Description}" FontSize="10" Foreground="#AAA" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- График температуры -->
+                <TextBlock Text="График температуры" FontSize="18" FontWeight="Bold" Margin="0,20,0,10"/>
+
+                <Border Background="#2D2D30" CornerRadius="8" Padding="10" Height="280">
+                    <lvc:CartesianChart Series="{Binding TemperatureSeries}" 
+                                        XAxes="{Binding XAxes}"
+                                        YAxes="{Binding YAxes}"/>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>
